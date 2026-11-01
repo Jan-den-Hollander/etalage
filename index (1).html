@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zaino – Showcase</title>
+<meta name="theme-color" content="#0f1a14">
+<style>
+  :root{--bg:#0f1a14;--card:#16241c;--accent:#6fbf73;--text:#eef5ef;--muted:#9db3a3;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,Roboto,Segoe UI,sans-serif;-webkit-tap-highlight-color:transparent;}
+  header{padding:28px 20px 10px;text-align:center;}
+  header h1{margin:0;font-size:28px;letter-spacing:1px;}
+  header p{margin:6px 0 0;color:var(--muted);font-size:14px;}
+  .notice{max-width:520px;margin:16px auto 0;padding:14px 16px;background:var(--card);
+    border:1px solid var(--accent);border-radius:14px;font-size:13px;line-height:1.5;}
+  .notice h2{margin:0 0 6px;font-size:14px;color:var(--accent);}
+  .notice p{margin:0 0 8px;}
+  .notice p:last-child{margin:0;}
+  .notice a{color:var(--accent);}
+  .wrap{padding:0 20px;}
+  .cat-title{max-width:520px;margin:26px auto 6px;padding:0;font-size:13px;
+    text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:520px;margin:0 auto;}
+  .tile{background:var(--card);border:1px solid #22352a;border-radius:18px;padding:20px 12px;
+    text-align:center;text-decoration:none;color:var(--text);display:flex;flex-direction:column;
+    align-items:center;gap:8px;min-height:104px;justify-content:center;font:inherit;cursor:pointer;
+    transition:transform .1s ease,background .15s ease;}
+  .tile:active{transform:scale(0.96);background:#1c2e22;}
+  .tile .icon{font-size:30px;}
+  .tile .label{font-size:14px;font-weight:600;line-height:1.2;}
+  .tile .sub{font-size:10.5px;color:var(--muted);line-height:1.2;}
+  footer{text-align:center;color:var(--muted);font-size:11px;padding:30px 20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎒 Zaino</h1>
+  <p id="appSubtitle">Al mijn apps in één overzicht</p>
+</header>
+
+<div class="wrap">
+  <div class="notice">
+    <h2>About these apps</h2>
+    <p>These apps are made by Jan den Hollander as a personal passion project and are free to use and share. The source code is hosted on my GitHub account (<a href="https://github.com/Jan-den-Hollander" target="_blank" rel="noopener">github.com/Jan-den-Hollander</a>). All apps are protected by copyright (© Jan den Hollander).</p>
+    <p>Personal, non-commercial use is welcome. Copying the source code, reselling, or using any part of this work commercially is not allowed without my written permission.</p>
+    <p>Questions or permission requests: <a href="mailto:jandenhollander@duck.com">jandenhollander@duck.com</a></p>
+  </div>
+</div>
+
+<div id="allCategories" class="wrap"></div>
+
+<footer>© Jan den Hollander · free and non-commercial · <a href="mailto:jandenhollander@duck.com" style="color:inherit">jandenhollander@duck.com</a></footer>
+
+<script>
+const TRANSLATIONS = {
+  nl: { subtitle:'Al mijn apps in één overzicht', langLabel:'Taal', langSub:'NL',
+    cat:{snel:'📌 Snel',felicit:'🎉 Feliciteren',taalcat:'🗣️ Taal oefenspiegels',spel:'🎲 Spelletjes & geluid',vegetatie:'🌿 Vegetatie onderzoek',serieus:'🛠️ Serieuze hulpmiddelen',reis:'✈️ Op reis',persoonlijk:'🧭 Persoonlijke hulpjes',nieuw:'✨ Meer'} },
+  it: { subtitle:'Tutte le mie app in un unico posto', langLabel:'Lingua', langSub:'IT',
+    cat:{snel:'📌 Rapido',felicit:'🎉 Auguri',taalcat:'🗣️ Specchi linguistici',spel:'🎲 Giochi & audio',vegetatie:'🌿 Ricerca vegetazione',serieus:'🛠️ Strumenti utili',reis:'✈️ In viaggio',persoonlijk:'🧭 Aiuti personali',nieuw:'✨ Altro'} },
+  en: { subtitle:'All my apps in one place', langLabel:'Language', langSub:'EN',
+    cat:{snel:'📌 Quick',felicit:'🎉 Greetings',taalcat:'🗣️ Language mirrors',spel:'🎲 Games & sound',vegetatie:'🌿 Vegetation research',serieus:'🛠️ Useful tools',reis:'✈️ Travel',persoonlijk:'🧭 Personal helpers',nieuw:'✨ More'} }
+};
+const LANG_ORDER = ['nl','it','en'];
+function getLang(){ try{ return localStorage.getItem('zainoLang') || 'nl'; }catch(e){ return 'nl'; } }
+function setLang(l){ try{ localStorage.setItem('zainoLang', l); }catch(e){} }
+
+const CATEGORIES = [
+  { key:'snel', ids:['zainetto','sammy','buonanotte','taal'] },
+  { key:'felicit', ids:['auguri','tantissimi','verjaardagnl','feeen','laureato','moederdag','sinterklaas','befana'] },
+  { key:'taalcat', ids:['catalaans','spaans','italiaans','duits','engels','nederlands','frans','extra18'] },
+  { key:'spel', ids:['giocoromano','contacten','jukebox','gioco'] },
+  { key:'vegetatie', ids:['berminventarisatie','rivelazioneverde'] },
+  { key:'serieus', ids:['audiolibri','scam','debunkers','morse','kompas','vogelverklikker','rivelatore','extra3'] },
+  { key:'reis', ids:['cicerone','romegids','triptorome','ricette','reisdagboek','boekenkast'] },
+  { key:'persoonlijk', ids:['cresce','animagiovani','colloquio','altavoce','lucaitaliaans','vislog'] },
+  { key:'nieuw', ids:['extra1','extra2','extra4','extra5','extra6','extra7','extra8','extra9','extra10','extra11','extra12','extra13','extra14','extra15'] }
+];
+
+const LINKS = {
+  zainetto:{icon:'🎒',label:'Zainetto',sub:'Verzameling apps, dashboard veloce',url:'https://zainetto-33ll.vercel.app/'},
+  sammy:{icon:'💶',label:'Sammy',sub:'Financiële regelneef, consulente finanziario',url:'https://sammy-rust.vercel.app/'},
+  buonanotte:{icon:'🌙',label:'Buonanotte',sub:'Verhaal + mp3, Fiabe italiane · voce Gemini AI',url:'https://buonanotte.vercel.app/'},
+  auguri:{icon:'🎈',label:'Auguri Speciale',sub:'Algemeen feliciteren, genere auguri',url:'https://auguri-speciale-a-te.vercel.app/'},
+  tantissimi:{icon:'🎊',label:'Tantissimi Auguri',sub:'Edizione italiano',url:'https://tantissimi-auguri-a-te.vercel.app/'},
+  verjaardagnl:{icon:'🎂',label:'Verjaardag NL',sub:'Nederlands, Edizione Olandese',url:'https://test-tts-tedesco-afby.vercel.app/'},
+  feeen:{icon:'🧚',label:'Feeënspiegel',sub:'Verjaardag kinderen, auguri per bambini',url:'https://specchio-delle-fate.vercel.app'},
+  laureato:{icon:'🎓',label:'Laureato',sub:'Geslaagd (IT) auguri per il laureato',url:'https://specchio-del-laureato.vercel.app/'},
+  moederdag:{icon:'💐',label:'Moederdag',sub:'Feliciteren giorno della mamma',url:'https://moederdag.vercel.app/'},
+  sinterklaas:{icon:'🎅',label:'Sinterklaas',sub:'Santa Nicola ( non babbo natale)',url:'https://sinterklaasspiegel.vercel.app/'},
+  befana:{icon:'🧙',label:'Befana',sub:'Feliciteren',url:'https://befana.vercel.app/'},
+  catalaans:{icon:'🪞🗣️',label:'Catalaans, catalano',sub:'Taalspiegel, specchio linguistico',url:'https://rodionrask.vercel.app/'},
+  spaans:{icon:'🪞🗣️',label:'Spaans, spagnolo',sub:'Taalspiegel, specchio linguistico',url:'https://spechio-espanol.vercel.app/'},
+  italiaans:{icon:'🪞🗣️',label:'Italiaans, Italiano',sub:'Taalspiegel, specchio linguistico',url:'https://specchio-magico-shadowing-kdv7.vercel.app/'},
+  duits:{icon:'🪞🗣️',label:'Duits,Tedesco',sub:'Taalspiegel, specchio linguistico',url:'https://zauberspiegel.vercel.app/'},
+  engels:{icon:'🪞🗣️',label:'Engels, Inglese',sub:'Taalspiegel, specchio linguistico',url:'https://magic-mirror-two-tawny.vercel.app/'},
+  nederlands:{icon:'🪞🗣️',label:'Nederlands,Olandese',sub:'Taalspiegel, specchio linguistico',url:'https://de-taal-toverspiegel.vercel.app/'},
+  frans:{icon:'🪞🗣️',label:'Frans, Francese',sub:'Taalspiegel,specchio linguistico',url:'https://specchio-francais.vercel.app/'},
+  extra18:{icon:'🗣🎒',label:'Taalspiegels samen-gli specchi linguistici insieme',sub:'Taalspiegels samen-gli specchi linguistici insieme',url:'https://taalspiegels-specchi-linguistici-z3.vercel.app/'},
+  giocoromano:{icon:'🏛️',label:'Gioco Romano',sub:'Herontdekt Romeins spel, Un gioco romano riscoperto',url:'https://jan-den-hollander.github.io/giocoromano/'},
+  contacten:{icon:'📇',label:'Hoeveel, Quanti-Contatti',sub:'Hoeveel & waar i vostri contatti su soci',url:'https://jan-den-hollander.github.io/quanti-contatti-hai'},
+  jukebox:{icon:'🎵',label:'Jukebox',sub:'Je muziekmap afspelen,Riproduzione della cartella musicale',url:'https://jan-den-hollander.github.io/jukebox/'},
+  gioco:{icon:'🔊',label:'Geluidspel ,Gioco Gioco sonoro',sub:'Geluidsspel slechtzienden, Gioco sonoro per ipovedenti',url:'https://jan-den-hollander.github.io/gioco/'},
+  berminventarisatie:{icon:'🌾',label:'Berminventarisatie (nl)',sub:'Vegetatie onderzoek, Studio della vegetazione',url:'https://jan-den-hollander.github.io/berminventarisatie/'},
+  rivelazioneverde:{icon:'🌿',label:'Rivelazione Verde (it)',sub:'Vegetatie-onderzoek, Studio della vegetazione',url:'https://jan-den-hollander.github.io/rivelazione-verde/'},
+  audiolibri:{icon:'🎧',label:'Luisterboeken, Audiolibri',sub:'Audioboeken kopiëren, Copiare gli audiolibri',url:'https://jan-den-hollander.github.io/audiolibri'},
+  scam:{icon:'🛡️',label:'Scam Detector',sub:'Fraude check, Controllo antifrode',url:'https://scam-detector-three-blond.vercel.app'},
+  debunkers:{icon:'🔎',label:'Debunkers',sub:'Influencers ontkrachten,Smentire gli influencer',url:'https://jan-den-hollander.github.io/debunkers-/'},
+  morse:{icon:'📡',label:'Morse',sub:'SOS seinen of ontvangen, Inviare o ricevere segnali SOS',url:'https://jan-den-hollander.github.io/sos-morsecode/'},
+  kompas:{icon:'🧭',label:'Richtingwijzer',sub:'Richtingwijzer, Indicazioni',url:'https://jan-den-hollander.github.io/bussola-del-freccia-/'},
+  vogelverklikker:{icon:'🐦',label:'verklikker, spia attenzione',sub:'Bewegingsdetectie NL, Rilevamento del movimento NL',url:'https://jan-den-hollander.github.io/vogelverklikker/'},
+  rivelatore:{icon:'🐦',label:'Rivelatore',sub:'Rilevamento del movimento IT, Bewegingsdetectie IT',url:'https://rivelatore.vercel.app/'},
+  extra3:{icon:'🪄🧩🌻',label:'tegelwippen, altalene a piastrelle',sub:'Hoe in te delen / Come organizzarsi',url:'https://tegelwippen.vercel.app/'},
+  cicerone:{icon:'🏺',label:'Cicerone IT',sub:'Reisgids, Guida turistica',url:'https://jan-den-hollander.github.io/cicerone-it/'},
+  romegids:{icon:'🏛️',label:'Romegids Guida turistica di Roma',sub:'Reisgids Guida turistica',url:'https://jan-den-hollander.github.io/romegids/'},
+  triptorome:{icon:'✈️',label:'Trip to Rome Viaggio a Roma',sub:'IT / NL',url:'https://jan-den-hollander.github.io/trip-to-rome-it-nl/'},
+  ricette:{icon:'🍝',label:'Recepten Ricette',sub:'Recepten onderweg noteren, Annotare le ricette mentre si è in giro',url:'https://jan-den-hollander.github.io/ricette-/'},
+  reisdagboek:{icon:'📔',label:'Reisdagboek, Diario di viaggio',sub:'Diario di viaggio',url:'https://jan-den-hollander.github.io/reisdagboek-diario-di-viagio/'},
+  boekenkast:{icon:'📚',label:'Boekenkast, Libreria',sub:'Catalogus, geen dubbels, Catalogo, senza duplicati',url:'https://jan-den-hollander.github.io/boekenkast/'},
+  cresce:{icon:'🌱',label:'Cresce Persoonlijke groei',sub:'Zelfontwikkeltips, Consigli per lo sviluppo personale',url:'https://jan-den-hollander.github.io/Cresce/'},
+  animagiovani:{icon:'🌟',label:"Specchio dell'Anima, Spiegel van de ziel",sub:'Jeugd advies (IT), Consulenza per i giovani (IT)',url:'https://specchio-dell-anima.vercel.app/'},
+  colloquio:{icon:'💼',label:'Aiuto Colloquio, Hulp bij het sollicitatiegesprek',sub:'Sollicitatiehulp, Hulp bij het sollicitatiegesprek',url:'https://jan-den-hollander.github.io/aiuto-colloquio-/'},
+  altavoce:{icon:'🔈',label:'Altavoce, voorlezen',sub:'PDF / tekst voorlezen, Lettura ad alta voce di PDF / testo',url:'https://jan-den-hollander.github.io/altavoce/'},
+  lucaitaliaans:{icon:'🇮🇹',label:'Luca specchio (Italiaans)',sub:'Editie gelimiteerd',url:'https://specchio-della-anima-edizione-limit.vercel.app/'},
+  vislog:{icon:'🎣',label:'VisLog',sub:'Vangsten loggen, Registrare le catture',url:'https://vis-log-pesce.vercel.app/'},
+  extra1:{icon:'🪴',label:'balkonwijzer, indicatore da balcone',sub:'Hoe in te richten/Come organizzarsi',url:'https://balkonwijzer.vercel.app/'},
+  extra2:{icon:'🌻🪄',label:'border-wijzer, Guida alle piante da aiuola',sub:'Come organizzarsi / hoe in te richten',url:'https://borderwijzer.vercel.app/'},
+  extra4:{icon:'🦉📖',label:'Beslisboom-decision tree',sub:"AI tool vinden / trovarsi l'IA giusta",url:'https://llm-decision-tree-nl-it.vercel.app/'},
+  extra5:{icon:'💰🌳',label:'Boomwaarde bepaling- Valutazione degli alberi',sub:'Schade vaststelling/Accertamento del danno',url:'https://boomwaardebepaling.vercel.app/'},
+  extra6:{icon:'🍃CO²',label:'CO² waarderen bij bomen',sub:"het CO² argument/l'argomento della CO²",url:'https://co2-boomwaarde.vercel.app/'},
+  extra7:{icon:'🐝🪶🐾',label:'Trovarci/zoeken',sub:'zoek de bron/trova la fonte',url:'https://trovarci.vercel.app/'},
+  extra8:{icon:'📣⌨️',label:'doppiaggio ondertitelen',sub:'ondertitelen / sottotitoli',url:'https://doppiaggio.vercel.app/'},
+  extra9:{icon:'🎤📣 📖',label:'Audioscriptie',sub:'film/video audio scriptie',url:'https://audioscriptie.vercel.app/'},
+  extra10:{icon:'🫂',label:'Nexus',sub:'Find your social link in steps',url:'https://nexus-dun-five.vercel.app/'},
+  extra11:{icon:'📬',label:'Briefkaart-cartolina',sub:'Scrivi una cartolina digitale — corsivo, con foto, pronta per caricamento',url:'https://cartolina-mauve.vercel.app'},
+  extra12:{icon:'📩📶🛜🔐',label:'Compagnia',sub:'socials control',url:'https://compagnia-lxrf.vercel.app/'},
+  extra13:{icon:'🤔🪞',label:'Ragionare/Redeneren',sub:'beredeneer een stelling /ragionare su',url:'https://ragionare.vercel.app/'},
+  extra14:{icon:'📖',label:'Beschrijf/Racconta',sub:'begrijpend lezen testen,Testare se hai capito quale hai letto',url:'https://beschrijf.vercel.app/'},
+  extra15:{icon:'🇮🇹☕️🔔',label:'caffè italiano',sub:'per praticare parlare',url:'https://caffe-italiano.vercel.app/'}
+};
+
+function renderAll(){
+  const lang = getLang(), t = TRANSLATIONS[lang];
+  document.getElementById('appSubtitle').textContent = t.subtitle;
+  const container = document.getElementById('allCategories');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'cat-title';
+    h.textContent = t.cat[cat.key];
+    container.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    cat.ids.forEach(id => {
+      if(id === 'taal'){
+        const b = document.createElement('button');
+        b.className = 'tile';
+        b.innerHTML = `<div class="icon">🌐</div><div class="label">${t.langLabel}</div><div class="sub">${t.langSub}</div>`;
+        b.addEventListener('click', () => {
+          setLang(LANG_ORDER[(LANG_ORDER.indexOf(getLang()) + 1) % LANG_ORDER.length]);
+          renderAll();
+        });
+        grid.appendChild(b);
+        return;
+      }
+      const link = LINKS[id];
+      if(!link) return;
+      const a = document.createElement('a');
+      a.className = 'tile';
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.innerHTML = `<div class="icon">${link.icon}</div><div class="label">${link.label}</div><div class="sub">${link.sub}</div>`;
+      grid.appendChild(a);
+    });
+    container.appendChild(grid);
+  });
+}
+renderAll();
+</script>
+</body>
+</html>
